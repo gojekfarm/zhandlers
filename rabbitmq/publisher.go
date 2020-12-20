@@ -23,7 +23,7 @@ func getRetryCount(m ziggurat.Message) int {
 	return m.Attribute("retryCount").(int)
 }
 
-func setRetryCount(m ziggurat.Message) {
+func setRetryCount(m *ziggurat.Message) {
 	value := m.Attribute("retryCount")
 
 	if value == nil {

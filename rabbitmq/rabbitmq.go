@@ -104,7 +104,7 @@ func (r *RabbitMQRetry) retry(event ziggurat.Message, ctx context.Context) error
 	} else {
 		message.Exchange = constructExchangeName(StreamRouteName(event.RoutingKey), "delay")
 		publishing.Expiration = r.queueConfig[StreamRouteName(event.RoutingKey)].DelayQueueExpirationInMS
-		setRetryCount(event)
+		setRetryCount(&event)
 	}
 
 	buff, err := encodeMessage(event)
