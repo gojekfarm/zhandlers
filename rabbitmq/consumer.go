@@ -38,6 +38,7 @@ var createConsumer = func(ctx context.Context, d *amqpextra.Dialer, ctag string,
 			l.Info("rabbitmq processing message from queue", map[string]interface{}{"queue-name": queueName})
 			msgEvent, err := decodeMessage(msg.Body)
 			if err != nil {
+				l.Error("error decoding message", err)
 				return msg.Reject(true)
 			}
 			msgHandler.HandleMessage(msgEvent, ctx)
