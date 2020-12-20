@@ -67,8 +67,8 @@ func (s *Client) Gauge(metricName string, value int64, arguments map[string]stri
 }
 
 func (s *Client) PublishHandlerMetrics(handler ziggurat.Handler) ziggurat.Handler {
-	return ziggurat.HandlerFunc(func(messageEvent *ziggurat.Message, ctx context.Context) ziggurat.ProcessStatus {
-		arguments := map[string]string{"route": messageEvent.RouteName}
+	return ziggurat.HandlerFunc(func(messageEvent ziggurat.Message, ctx context.Context) ziggurat.ProcessStatus {
+		arguments := map[string]string{"route": messageEvent.RoutingKey}
 		startTime := time.Now()
 		status := handler.HandleMessage(messageEvent, ctx)
 		endTime := time.Now()
@@ -85,7 +85,7 @@ func (s *Client) PublishHandlerMetrics(handler ziggurat.Handler) ziggurat.Handle
 }
 
 func (s *Client) PublishKafkaLag(handler ziggurat.Handler) ziggurat.Handler {
-	return ziggurat.HandlerFunc(func(messageEvent *ziggurat.Message, ctx context.Context) ziggurat.ProcessStatus {
+	return ziggurat.HandlerFunc(func(messageEvent ziggurat.Message, ctx context.Context) ziggurat.ProcessStatus {
 		actualTS := messageEvent.Attribute("kafka-timestamp")
 		if actualTS == nil {
 			return handler.HandleMessage(messageEvent, ctx)
@@ -93,7 +93,7 @@ func (s *Client) PublishKafkaLag(handler ziggurat.Handler) ziggurat.Handler {
 		now := time.Now()
 		diff := now.Sub(actualTS.(time.Time)).Milliseconds()
 		s.Gauge("kafka_message_lag", diff, map[string]string{
-			"route": messageEvent.RouteName,
+			"route": messageEvent.RoutingKey,
 		})
 		return handler.HandleMessage(messageEvent, ctx)
 	})

@@ -16,14 +16,14 @@ func constructExchangeName(route StreamRouteName, queueType string) string {
 	return fmt.Sprintf("%s_%s_%s_exchange", "ziggurat", route, queueType)
 }
 
-func getRetryCount(m *ziggurat.Message) int {
+func getRetryCount(m ziggurat.Message) int {
 	if value := m.Attribute("retryCount"); value == nil {
 		return 0
 	}
 	return m.Attribute("retryCount").(int)
 }
 
-func setRetryCount(m *ziggurat.Message) {
+func setRetryCount(m ziggurat.Message) {
 	value := m.Attribute("retryCount")
 
 	if value == nil {
@@ -33,7 +33,7 @@ func setRetryCount(m *ziggurat.Message) {
 	m.SetAttribute("retryCount", value.(int)+1)
 }
 
-func encodeMessage(message *ziggurat.Message) (*bytes.Buffer, error) {
+func encodeMessage(message ziggurat.Message) (*bytes.Buffer, error) {
 	buff := bytes.NewBuffer([]byte{})
 	gob.Register(time.Time{})
 	encoder := gob.NewEncoder(buff)
