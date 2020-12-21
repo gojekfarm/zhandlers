@@ -1,4 +1,4 @@
-package metrics
+package statsdpub
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type Client struct {
 	handler ziggurat.Handler
 }
 
-func NewClient(opts ...func(c *Client)) *Client {
+func NewPublisher(opts ...func(c *Client)) *Client {
 	c := &Client{}
 	for _, opt := range opts {
 		opt(c)
