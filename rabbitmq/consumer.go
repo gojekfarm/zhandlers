@@ -15,7 +15,7 @@ var decodeMessage = func(body []byte) (ziggurat.Message, error) {
 	buff.Write(body)
 	decoder := gob.NewDecoder(&buff)
 	messageEvent := ziggurat.CreateMessage(nil, nil, "", map[string]interface{}{})
-	if decodeErr := decoder.Decode(messageEvent); decodeErr != nil {
+	if decodeErr := decoder.Decode(&messageEvent); decodeErr != nil {
 		return messageEvent, decodeErr
 	}
 	return messageEvent, nil
