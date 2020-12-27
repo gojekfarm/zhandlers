@@ -67,10 +67,11 @@ func (s *Client) Gauge(metricName string, value int64, arguments map[string]stri
 }
 
 func (s *Client) PublishHandlerMetrics(handler ziggurat.Handler) ziggurat.Handler {
-	return ziggurat.HandlerFunc(func(messageEvent ziggurat.Message, ctx context.Context) ziggurat.ProcessStatus {
-		arguments := map[string]string{"route": messageEvent.RoutingKey}
+	return ziggurat.HandlerFunc(func(messageEvent ziggurat.Event) ziggurat.ProcessStatus {
+		route := messageEvent.Headers()[ziggurat.HeaderMessageRoute]
+		arguments := map[string]string{"route": route}
 		startTime := time.Now()
-		status := handler.HandleMessage(messageEvent, ctx)
+		status := handler.HandleEvent(messageEvent)
 		endTime := time.Now()
 		diffTimeInMS := endTime.Sub(startTime).Milliseconds()
 		s.Gauge("handler_func_exec_time", diffTimeInMS, arguments)
@@ -81,20 +82,5 @@ func (s *Client) PublishHandlerMetrics(handler ziggurat.Handler) ziggurat.Handle
 			s.IncCounter("message_processing_success_count", 1, arguments)
 		}
 		return status
-	})
-}
-
-func (s *Client) PublishKafkaLag(handler ziggurat.Handler) ziggurat.Handler {
-	return ziggurat.HandlerFunc(func(messageEvent ziggurat.Message, ctx context.Context) ziggurat.ProcessStatus {
-		actualTS := messageEvent.Attribute("kafka-timestamp")
-		if actualTS == nil {
-			return handler.HandleMessage(messageEvent, ctx)
-		}
-		now := time.Now()
-		diff := now.Sub(actualTS.(time.Time)).Milliseconds()
-		s.Gauge("kafka_message_lag", diff, map[string]string{
-			"route": messageEvent.RoutingKey,
-		})
-		return handler.HandleMessage(messageEvent, ctx)
 	})
 }
