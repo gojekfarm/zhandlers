@@ -10,11 +10,11 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var decodeMessage = func(body []byte) (ziggurat.Message, error) {
+var decodeMessage = func(body []byte) (RabbitMQPayload, error) {
 	buff := bytes.Buffer{}
 	buff.Write(body)
 	decoder := gob.NewDecoder(&buff)
-	messageEvent := ziggurat.CreateMessage(nil, nil, "", map[string]interface{}{})
+	messageEvent := RabbitMQPayload{}
 	if decodeErr := decoder.Decode(&messageEvent); decodeErr != nil {
 		return messageEvent, decodeErr
 	}
@@ -41,7 +41,8 @@ var createConsumer = func(ctx context.Context, d *amqpextra.Dialer, ctag string,
 				l.Error("error decoding message", err)
 				return msg.Reject(true)
 			}
-			msgHandler.HandleMessage(msgEvent, ctx)
+			msgEvent.ctx = ctx
+			msgHandler.HandleEvent(msgEvent)
 			return msg.Ack(false)
 		}))}
 	return d.Consumer(options...)
